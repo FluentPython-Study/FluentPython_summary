@@ -44,3 +44,28 @@ for codec in ['latin_1', 'utf_8', 'utf_16']:
     latin_1	b'El Ni\xf1o'
     utf_8	b'El Ni\xc3\xb1o'
     utf_16	b'\xff\xfeE\x00l\x00 \x00N\x00i\x00\xf1\x00o\x00'
+
+
+
+(4.4 - 4.9는 코드예시를 정리하기 보다  keyword를 정리하고, search 하는 방향으로 학습.)
+
+## 4.4 인코딩 / 디코딩 문제 이해하기
+
+Although there is a generic UnicodeError exception, almost always the error reported is more specific: either an UnicodeEncodeError, when converting str to binary se‐quences or an UnicodeDecodeError when reading binary sequences into str. Loading Python modules may also generate SyntaxError when the source encoding is unex‐pected. We’ll show how to handle all of these errors in the next sections.
+
+## 4.5 텍스트 파일 다루기
+The best practice for handling text is the “Unicode sandwich” This means that bytes should be decoded to str as early as possible on input, e.g. when opening a file for reading. The “meat” of the sandwich is the business logic of your program, where text handling is done exclusively on str objects. You should never be encoding or de‐coding in the middle of other processing. On output, the str are encoded to bytes as late as possible. Most Web frameworks work like that, and we rarely touch bytes when using them. In Django, for example, your views should output Unicode str; Django itself takes care of encoding the response to bytes, using UTF-8 by default.
+
+## 4.6 제대로 비교하기 위해 유니코드 정규화하기
+String comparisons are complicated by the fact that Unicode has combining characters: diacritics and other marks that attach to the preceding character, appearing as one when printed.
+For example, the word “café” may be composed in two ways, using 4 or 5 code points, but the result looks exactly the same.
+
+## 4.7 유니코드 텍스트 정렬하기
+Python sorts sequences of any type by comparing the items in each sequence one by one. For strings, this means comparing the code points. Unfortunately, this produces unacceptable results for anyone who uses non-ASCII characters.
+
+## 4.8 유니코드 데이터베이스
+The Unicode standard provides an entire database — in the form of numerous struc‐ tured text files — that includes not only the table mapping code points to character names, but also lot of metadata about the individual characters and how they are related. For example, the Unicode database records whether a character is printable, is a letter, is a decimal digit or is some other numeric symbol. That’s how the str methods isidentifier, isprintable, isdecimal and isnumeric work. str.casefold also uses in‐ formation from a Unicode table.
+
+
+## 4.9 이중모드 str 및 bytes API
+The standard library has functions that accept str or bytes arguments and behave differently depending on the type. Some examples are in the re and os modules.
