@@ -12,13 +12,11 @@ slice(a,b,c) 객체를 생성하고 `__getitem__`() 메서드에서 처리함으
 
 
 
-## 10.2 Vector 버전 #1 : Vector2d 호환
+## 10.2 ~ 10.7 Vector 클래스 만들기
 
 - Vector 클래스가 Vector2d 클래스를 상속받도록 만들지 않은 이유
     - 생성자가 호환되지 않는다.
     - vector 클래스에 대한 정리가 필요
-
-
 
 - 최종 코드
 
@@ -27,17 +25,17 @@ from array import array
 import reprlib
 import math
 import numbers
-import functools
-import operator
+import functools # reduce 사용 위함
+import operator # XOR 사용 위함
 import itertools
 
 class Vector:
     typecode = 'd'
-    300 | Chapter 10: Sequence hacking, hashing and slicing
         def __init__(self, components):
             self._components = array(self.typecode, components)
             
             def __iter__(self):
+                # 반복할 수 있도록 self._components에 대한 반복자 반환
                 return iter(self._components)
             
             def __repr__(self):
@@ -57,7 +55,9 @@ class Vector:
                         all(a == b for a, b in zip(self, other)))
             
             def __hash__(self):
+                # 각 요소의 해시를 느긋하게 계산하기 위해 제너레이터 표현식을 만든다.
                 hashes = (hash(x) for x in self)
+                # xor 함수와 hashes를 전달해서 reduce() 함수를 호출함으로써 해시값들의 XOR을 구한다. 세번째 인수인 0은 초깃값이다.
                 return functools.reduce(operator.xor, hashes, 0)
             
             def __abs__(self):
@@ -70,8 +70,10 @@ class Vector:
                 return len(self._components)
             
             def __getitem__(self, index):
+                # 객체의 클래스를 가져옴
                 cls = type(self)
                 if isinstance(index, slice):
+                    # _components 배열의 슬라이스로부터 Vector 클래스 생성자를 이용해서 Vector 객체를 생성한다.
                     return cls(self._components[index])
                 elif isinstance(index, numbers.Integral):
                     return self._components[index]
@@ -79,26 +81,29 @@ class Vector:
                     msg = '{.__name__} indices must be integers'
                     raise TypeError(msg.format(cls))
                     shortcut_names = 'xyzt'
-                    def __getattr__(self, name):
-                        cls = type(self)
-                      
+            
+            def __getattr__(self, name):
+                cls = type(self)                      
                 if 0 <= pos < len(self._components):
                         return self._components[pos]
-                    msg = '{.__name__!r} object has no attribute {!r}'
-                    raise AttributeError(msg.format(cls, name))
-                    def angle(self, n):
-                        r = math.sqrt(sum(x * x for x in self[n:]))
-                        a = math.atan2(r, self[n-1])
-                        if (n == len(self) - 1) and (self[-1] < 0):
-                            return math.pi * 2 - a
-                        else:
-                            return a
-                        
+                msg = '{.__name__!r} object has no attribute {!r}'
+                raise AttributeError(msg.format(cls, name))
+                    
+            def angle(self, n):
+                r = math.sqrt(sum(x * x for x in self[n:]))
+                a = math.atan2(r, self[n-1])
+                if (n == len(self) - 1) and (self[-1] < 0):
+                    return math.pi * 2 - a
+                else:
+                    return a
+            
+            # 요청에 따라 각좌표를 모두 계산하는 제너레이터 표현식을 생성한다.
        	    def angles(self):
             	return (self.angle(n) for n in range(1, len(self)))
 
             def __format__(self, fmt_spec=''):
-                if fmt_spec.endswith('h'): # hyperspherical coordinates
+                # itertools.chain() 함수를 이용해서 크기와 각좌표를 차례대로 반복하는 제너레이터 표현식을 만든다.
+                if fmt_spec.endswith('h'): # 초구면좌표(hyperspherical coordinates)
                     fmt_spec = fmt_spec[:-1]
                     coords = itertools.chain([abs(self)],
                                              self.angles())
@@ -106,6 +111,7 @@ class Vector:
                     else:
                         coords = self
                         outer_fmt = '({})'
+                        # 좌표의 각 항목을 요청에 따라 포맷하는 제너레이터 표현식 생성
                         components = (format(c, fmt_spec) for c in coords)
                         return outer_fmt.format(', '.join(components))
                                 
