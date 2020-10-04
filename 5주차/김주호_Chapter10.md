@@ -93,23 +93,26 @@ class Vector:
                             return math.pi * 2 - a
                         else:
                             return a
-                        def angles(self):
-                            return (self.angle(n) for n in range(1, len(self)))
-                        def __format__(self, fmt_spec=''):
-                            if fmt_spec.endswith('h'): # hyperspherical coordinates
-                                fmt_spec = fmt_spec[:-1]
-                                coords = itertools.chain([abs(self)],
-                                                         self.angles())
-                                outer_fmt = '<{}>'
-                                else:
-                                    coords = self
-                                    outer_fmt = '({})'
-                                    components = (format(c, fmt_spec) for c in coords)
-                                    return outer_fmt.format(', '.join(components))
-                                @classmethod
-                                def frombytes(cls, octets):
-                                    typecode = chr(octets[0])
-                                    memv = memoryview(octets[1:]).cast(typecode)
-                                    return cls(memv)
+                        
+       	    def angles(self):
+            	return (self.angle(n) for n in range(1, len(self)))
+
+            def __format__(self, fmt_spec=''):
+                if fmt_spec.endswith('h'): # hyperspherical coordinates
+                    fmt_spec = fmt_spec[:-1]
+                    coords = itertools.chain([abs(self)],
+                                             self.angles())
+                    outer_fmt = '<{}>'
+                    else:
+                        coords = self
+                        outer_fmt = '({})'
+                        components = (format(c, fmt_spec) for c in coords)
+                        return outer_fmt.format(', '.join(components))
+                                
+            @classmethod
+            def frombytes(cls, octets):
+                typecode = chr(octets[0])
+                memv = memoryview(octets[1:]).cast(typecode)
+                return cls(memv)
 ```
 
